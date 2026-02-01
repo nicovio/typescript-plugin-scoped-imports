@@ -1,0 +1,30 @@
+{
+  "name": "typescript-plugin-scoped-imports",
+  "version": "0.1.0",
+  "description": "TypeScript Language Server plugin para controlar auto-imports basado en scope",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest"
+  },
+  "keywords": [
+    "typescript",
+    "plugin",
+    "imports",
+    "scoped"
+  ],
+  "author": "Nicolas Viotti",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.0.0"
+  }
+}

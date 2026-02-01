@@ -1,0 +1,12 @@
+{
+  "name": "test-project",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Test project for typescript-plugin-scoped-imports",
+  "dependencies": {
+    "typescript": "^5.0.0",
+    "typescript-plugin-scoped-imports": "file:../..",
+    "@types/react": "^18.0.0",
+    "react": "^18.0.0"
+  }
+}
