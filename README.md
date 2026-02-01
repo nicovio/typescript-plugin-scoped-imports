@@ -17,6 +17,8 @@ pnpm install
 pnpm run build
 ```
 
+Requiere Node.js 24 LTS.
+
 Nota: si cambias dependencias en `package.json`, corre `pnpm install` y commitea `pnpm-lock.yaml`.
 En CI se usa `pnpm install --frozen-lockfile` para garantizar consistencia.
 
