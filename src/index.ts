@@ -1,5 +1,24 @@
 import type * as ts from "typescript/lib/tsserverlibrary";
 
+const PRIVATE_FOLDER = "__private__";
+const PRIVATE_SEGMENT = `/${PRIVATE_FOLDER}/`;
+const PRIVATE_SEGMENT_START = `/${PRIVATE_FOLDER}`;
+const PRIVATE_PREFIX = `./${PRIVATE_FOLDER}`;
+const PRIVATE_FOLDER_REGEX = PRIVATE_FOLDER.replace(
+  /[.*+?^${}()|[\]\\]/g,
+  "\\$&",
+);
+const PRIVATE_RELATIVE_PATTERN = new RegExp(
+  `^(\\.\\./)+${PRIVATE_FOLDER_REGEX}(\\/|$)`,
+);
+const PRIVATE_FOLDER_PATTERN = new RegExp(
+  `([^/]+)/${PRIVATE_FOLDER_REGEX}(\\/|$)`,
+);
+const PRIVATE_IMPORT_PATTERN = new RegExp(
+  `from\\s+["']([^"']*${PRIVATE_FOLDER_REGEX}[^"']*)["']`,
+  "g",
+);
+
 function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
   function create(info: ts.server.PluginCreateInfo) {
     info.project.projectService.logger.info(
@@ -35,22 +54,22 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         );
 
         // If import doesn't contain __private__, allow
-        if (!normalizedImportPath.includes("__private__")) {
+        if (!normalizedImportPath.includes(PRIVATE_FOLDER)) {
           return true;
         }
 
         // Case 1: Current file is inside __private__ - allow all
-        if (normalizedCurrentFile.includes("/__private__/")) {
+        if (normalizedCurrentFile.includes(PRIVATE_SEGMENT)) {
           info.project.projectService.logger.info(
-            `typescript-plugin-scoped-imports: ALLOWING (file inside __private__): ${normalizedCurrentFile}`,
+            `typescript-plugin-scoped-imports: ALLOWING (file inside ${PRIVATE_FOLDER}): ${normalizedCurrentFile}`,
           );
           return true;
         }
 
         // Case 2: Relative import ./__private__ - sibling access, always allowed
-        if (normalizedImportPath.startsWith("./__private__")) {
+        if (normalizedImportPath.startsWith(PRIVATE_PREFIX)) {
           info.project.projectService.logger.info(
-            `typescript-plugin-scoped-imports: ALLOWING ./__private__ import: ${normalizedImportPath}`,
+            `typescript-plugin-scoped-imports: ALLOWING ${PRIVATE_PREFIX} import: ${normalizedImportPath}`,
           );
           return true;
         }
@@ -58,10 +77,9 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         // Case 3: Relative import with only ../ before __private__
         // Valid: ../__private__, ../../__private__, etc.
         // Invalid: ../foo/__private__, ../../bar/__private__
-        const relativePrivatePattern = /^(\.\.\/)+__private__(\/|$)/;
-        if (relativePrivatePattern.test(normalizedImportPath)) {
+        if (PRIVATE_RELATIVE_PATTERN.test(normalizedImportPath)) {
           info.project.projectService.logger.info(
-            `typescript-plugin-scoped-imports: ALLOWING relative ../__private__ import: ${normalizedImportPath}`,
+            `typescript-plugin-scoped-imports: ALLOWING relative ../${PRIVATE_FOLDER} import: ${normalizedImportPath}`,
           );
           return true;
         }
@@ -69,7 +87,9 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         // Case 4: Absolute filesystem path (starts with /)
         // Check if current file is inside the parent directory of __private__
         if (normalizedImportPath.startsWith("/")) {
-          const privateIndex = normalizedImportPath.indexOf("/__private__");
+          const privateIndex = normalizedImportPath.indexOf(
+            PRIVATE_SEGMENT_START,
+          );
           if (privateIndex !== -1) {
             // Get the parent directory of __private__ (the scope)
             const privateParentDir = normalizedImportPath.substring(
@@ -97,7 +117,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         // Case 5: Alias or module path (doesn't start with . or /)
         // Use heuristic: find the folder containing __private__ and check if current file is in that folder
         const privateFolderMatch = normalizedImportPath.match(
-          /([^/]+)\/__private__(\/|$)/,
+          PRIVATE_FOLDER_PATTERN,
         );
         if (privateFolderMatch) {
           const parentFolderName = privateFolderMatch[1];
@@ -141,7 +161,10 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         changes: readonly ts.FileTextChanges[],
       ): string[] {
         const paths: string[] = [];
-        const importPattern = /from\s+["']([^"']*__private__[^"']*)["']/g;
+        const importPattern = new RegExp(
+          PRIVATE_IMPORT_PATTERN.source,
+          PRIVATE_IMPORT_PATTERN.flags,
+        );
 
         for (const change of changes) {
           for (const textChange of change.textChanges || []) {
@@ -179,7 +202,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         return changes.some((change) =>
           change.textChanges?.some((textChange) => {
             const newText = textChange.newText;
-            return newText?.includes("__private__") ?? false;
+            return newText?.includes(PRIVATE_FOLDER) ?? false;
           }),
         );
       }
@@ -301,9 +324,9 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         // Log entries that contain __private__ for debugging
         for (const entry of prior.entries) {
           if (
-            entry.name?.includes("__private__") ||
-            entry.source?.includes("__private__") ||
-            entry.sourceDisplay?.some((p) => p.text.includes("__private__"))
+            entry.name?.includes(PRIVATE_FOLDER) ||
+            entry.source?.includes(PRIVATE_FOLDER) ||
+            entry.sourceDisplay?.some((p) => p.text.includes(PRIVATE_FOLDER))
           ) {
             info.project.projectService.logger.info(
               `[DEBUG entry] name="${entry.name}" source="${entry.source}" kind="${entry.kind}" sourceDisplay="${entry.sourceDisplay?.map((p) => p.text).join("")}"`,
@@ -315,7 +338,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         const blockedNames = new Set<string>();
         for (const entry of prior.entries) {
           const source = entry.source;
-          if (source?.includes("__private__")) {
+          if (source?.includes(PRIVATE_FOLDER)) {
             if (!isPrivateImportAllowed(source, fileName)) {
               blockedNames.add(entry.name);
             }
@@ -325,7 +348,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         // Filter entries
         const filteredEntries = prior.entries.filter((entry) => {
           // Handle entries with __private__ in the name (usually directory suggestions)
-          if (entry.name?.toLowerCase().includes("__private__")) {
+          if (entry.name?.toLowerCase().includes(PRIVATE_FOLDER)) {
             // If there's a source, use isPrivateImportAllowed
             if (entry.source) {
               return isPrivateImportAllowed(entry.source, fileName);
@@ -338,12 +361,12 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
                 isPathPrefixValidForPrivate(typedPath, fileName)
               ) {
                 info.project.projectService.logger.info(
-                  `typescript-plugin-scoped-imports: ALLOWING __private__ directory (valid path: "${typedPath}")`,
+                  `typescript-plugin-scoped-imports: ALLOWING ${PRIVATE_FOLDER} directory (valid path: "${typedPath}")`,
                 );
                 return true;
               }
               info.project.projectService.logger.info(
-                `typescript-plugin-scoped-imports: BLOCKING __private__ directory (invalid path: "${typedPath}")`,
+                `typescript-plugin-scoped-imports: BLOCKING ${PRIVATE_FOLDER} directory (invalid path: "${typedPath}")`,
               );
               return false;
             }
@@ -371,11 +394,11 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
               JSON.stringify(entry.data || {})
             ).toLowerCase();
 
-            if (entryText.includes("__private__")) {
+            if (entryText.includes(PRIVATE_FOLDER)) {
               // Try to extract a path from sourceDisplay to validate
               const sourceDisplayText =
                 entry.sourceDisplay?.map((p) => p.text).join("") || "";
-              if (sourceDisplayText.includes("__private__")) {
+              if (sourceDisplayText.includes(PRIVATE_FOLDER)) {
                 // Use sourceDisplay as the import path for validation
                 return isPrivateImportAllowed(sourceDisplayText, fileName);
               }
@@ -390,7 +413,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
 
           // Check source path
           const source = entry.source;
-          if (source?.includes("__private__")) {
+          if (source?.includes(PRIVATE_FOLDER)) {
             return isPrivateImportAllowed(source, fileName);
           }
 
@@ -420,7 +443,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         preferences: ts.UserPreferences | undefined,
         data: ts.CompletionEntryData | undefined,
       ): ts.CompletionEntryDetails | undefined => {
-        if (source?.includes("__private__")) {
+        if (source?.includes(PRIVATE_FOLDER)) {
           if (!isPrivateImportAllowed(source, fileName)) {
             info.project.projectService.logger.info(
               `typescript-plugin-scoped-imports: BLOCKING completion details for source: ${source}`,
