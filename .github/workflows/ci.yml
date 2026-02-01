@@ -12,9 +12,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run biome:lint
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm test -- --passWithNoTests
+          cache: pnpm
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.24.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run biome:lint
+      - run: pnpm run typecheck
+      - run: pnpm run build
+      - run: pnpm test -- --passWithNoTests

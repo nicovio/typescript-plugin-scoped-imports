@@ -13,9 +13,12 @@ Esta es la versión POC (Proof of Concept) del plugin. Actualmente:
 ## Instalación (POC)
 
 ```bash
-npm install
-npm run build
+pnpm install
+pnpm run build
 ```
+
+Nota: si cambias dependencias en `package.json`, corre `pnpm install` y commitea `pnpm-lock.yaml`.
+En CI se usa `pnpm install --frozen-lockfile` para garantizar consistencia.
 
 ## Uso en proyecto de prueba
 
@@ -42,7 +45,7 @@ No hay configuracion de patrones en esta version.
 
 ## Testing
 
-1. Build el plugin: `npm run build`
+1. Build el plugin: `pnpm run build`
 2. Abre `examples/test-project` en VSCode
 3. Recarga VSCode (Cmd+Shift+P → "Reload Window")
 4. Verifica logs en Output → TypeScript

@@ -6,12 +6,11 @@ Proyecto de prueba para validar el funcionamiento del plugin.
 
 ```bash
 # Desde la raíz del plugin
-npm install
-npm run build
-
-# Desde este directorio
-npm install
+pnpm install
+pnpm run build
 ```
+
+El ejemplo usa el workspace, no requiere `pnpm install` adicional en este directorio.
 
 ## Testing del POC (Fase 1)
 
@@ -75,7 +74,7 @@ src/
 
 ### Plugin no se carga
 
-- Verificar que `npm run build` completó sin errores en el directorio raíz
+- Verificar que `pnpm run build` completó sin errores en el directorio raíz
 - Verificar que existe `../../dist/index.js`
 - Recargar VSCode completamente
 
