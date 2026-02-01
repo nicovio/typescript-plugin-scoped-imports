@@ -1,5 +1,5 @@
-import React from 'react'
-import Item from './__private__/Item'
+import React from "react";
+import Item from "./__private__/Item";
 
 // ESTE ARCHIVO DEBE PODER IMPORTAR DESDE __private__
 // CASO 2: Archivo hermano puede importar desde __private__
@@ -12,5 +12,5 @@ export default function ParentComponent() {
       <Item />
       <h1>Parent Component</h1>
     </div>
-  )
+  );
 }

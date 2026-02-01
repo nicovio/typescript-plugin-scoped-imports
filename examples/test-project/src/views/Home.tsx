@@ -1,5 +1,5 @@
-import React from 'react'
-import Item from '@/components/gallery/__private__/Item'
+import React from "react";
+import Item from "@/components/gallery/__private__/Item";
 
 // PRUEBAS REALIZAR:
 // 1. Escribir: Item (debería dar error "Cannot find name 'Item'")
@@ -21,8 +21,10 @@ export default function Home() {
       <div>
         <h1>Home</h1>
         <p>Este componente NO debería poder importar Item de __private__/</p>
-        <p>Prueba escribiendo "Item" o "SomeUndefinedComponent" y usando Ctrl+.</p>
+        <p>
+          Prueba escribiendo "Item" o "SomeUndefinedComponent" y usando Ctrl+.
+        </p>
       </div>
     </>
-  )
+  );
 }

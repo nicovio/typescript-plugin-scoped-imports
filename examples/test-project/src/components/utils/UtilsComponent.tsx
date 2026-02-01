@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 // import Item from '../gallery/__private__/Item'
 
 // ESTE ARCHIVO DEBE PODER IMPORTAR DESDE __private__ DESDE UTILS
@@ -12,5 +12,5 @@ export default function UtilsComponent() {
       <p>Prueba escribiendo: import Test from '../gallery/__private__/'</p>
       <p>NO debería ver: ❌ (utils no es hermano de gallery)</p>
     </div>
-  )
+  );
 }

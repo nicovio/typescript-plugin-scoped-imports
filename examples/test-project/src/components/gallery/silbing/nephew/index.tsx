@@ -1,10 +1,10 @@
-import React from 'react'
-import Item from '@/components/gallery/__private__/Item'
+import React from "react";
+import Item from "@/components/gallery/__private__/Item";
 
-type Props = {}
+type Props = {};
 
 const Fafafa = ({}: Props) => {
-  return <Item />
-}
+  return <Item />;
+};
 
-export default Fafafa
+export default Fafafa;

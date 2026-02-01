@@ -15,12 +15,7 @@
     "biome:check": "biome check .",
     "biome:check:fix": "biome check --write ."
   },
-  "keywords": [
-    "typescript",
-    "plugin",
-    "imports",
-    "scoped"
-  ],
+  "keywords": ["typescript", "plugin", "imports", "scoped"],
   "author": "Nicolas Viotti",
   "license": "MIT",
   "devDependencies": {
