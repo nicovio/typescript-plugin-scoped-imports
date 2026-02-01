@@ -148,11 +148,12 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
             const newText = textChange.newText;
             if (!newText) continue;
 
-            let match;
             // Reset regex state
             importPattern.lastIndex = 0;
-            while ((match = importPattern.exec(newText)) !== null) {
+            let match: RegExpExecArray | null = importPattern.exec(newText);
+            while (match !== null) {
               paths.push(match[1]);
+              match = importPattern.exec(newText);
             }
           }
         }
@@ -178,20 +179,26 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         return changes.some((change) =>
           change.textChanges?.some((textChange) => {
             const newText = textChange.newText;
-            return newText && newText.includes("__private__");
+            return newText?.includes("__private__") ?? false;
           }),
         );
       }
 
       // Create language service proxy
-      const proxy: ts.LanguageService = Object.create(null);
+      const proxy = Object.create(null) as ts.LanguageService;
+      const proxyObject = proxy as unknown as Record<string, unknown>;
       const oldLS = info.languageService;
 
       // Copy all methods from original LS
       for (const k in oldLS) {
-        const x = (oldLS as any)[k];
-        proxy[k as keyof ts.LanguageService] = (...args: any[]) =>
-          x.apply(oldLS, args);
+        const key = k as keyof ts.LanguageService;
+        const x = oldLS[key];
+        if (typeof x === "function") {
+          proxyObject[k] = (...args: unknown[]) =>
+            (x as (...args: unknown[]) => unknown).apply(oldLS, args);
+        } else {
+          proxyObject[k] = x;
+        }
       }
 
       // Helper: Extract the import path being typed at the given position
@@ -292,7 +299,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         );
 
         // Log entries that contain __private__ for debugging
-        prior.entries.forEach((entry) => {
+        for (const entry of prior.entries) {
           if (
             entry.name?.includes("__private__") ||
             entry.source?.includes("__private__") ||
@@ -302,22 +309,23 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
               `[DEBUG entry] name="${entry.name}" source="${entry.source}" kind="${entry.kind}" sourceDisplay="${entry.sourceDisplay?.map((p) => p.text).join("")}"`,
             );
           }
-        });
+        }
 
         // Find blocked names (from __private__ sources that are not allowed)
         const blockedNames = new Set<string>();
-        prior.entries.forEach((entry) => {
-          if (entry.source && entry.source.includes("__private__")) {
-            if (!isPrivateImportAllowed(entry.source, fileName)) {
+        for (const entry of prior.entries) {
+          const source = entry.source;
+          if (source?.includes("__private__")) {
+            if (!isPrivateImportAllowed(source, fileName)) {
               blockedNames.add(entry.name);
             }
           }
-        });
+        }
 
         // Filter entries
         const filteredEntries = prior.entries.filter((entry) => {
           // Handle entries with __private__ in the name (usually directory suggestions)
-          if (entry.name && entry.name.toLowerCase().includes("__private__")) {
+          if (entry.name?.toLowerCase().includes("__private__")) {
             // If there's a source, use isPrivateImportAllowed
             if (entry.source) {
               return isPrivateImportAllowed(entry.source, fileName);
@@ -381,8 +389,9 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
           }
 
           // Check source path
-          if (entry.source.includes("__private__")) {
-            return isPrivateImportAllowed(entry.source, fileName);
+          const source = entry.source;
+          if (source?.includes("__private__")) {
+            return isPrivateImportAllowed(source, fileName);
           }
 
           return true;
@@ -411,7 +420,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         preferences: ts.UserPreferences | undefined,
         data: ts.CompletionEntryData | undefined,
       ): ts.CompletionEntryDetails | undefined => {
-        if (source && source.includes("__private__")) {
+        if (source?.includes("__private__")) {
           if (!isPrivateImportAllowed(source, fileName)) {
             info.project.projectService.logger.info(
               `typescript-plugin-scoped-imports: BLOCKING completion details for source: ${source}`,
@@ -473,11 +482,17 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
       // Intercept getCombinedCodeFix
       proxy.getCombinedCodeFix = (
         scope: ts.CombinedCodeFixScope,
-        fixId: {},
+        fixId: unknown,
         formatOptions: ts.FormatCodeSettings,
         preferences: ts.UserPreferences,
       ): ts.CombinedCodeActions => {
-        const result = oldLS.getCombinedCodeFix(
+        const getCombinedCodeFix = oldLS.getCombinedCodeFix as (
+          scope: ts.CombinedCodeFixScope,
+          fixId: unknown,
+          formatOptions: ts.FormatCodeSettings,
+          preferences: ts.UserPreferences,
+        ) => ts.CombinedCodeActions;
+        const result = getCombinedCodeFix(
           scope,
           fixId,
           formatOptions,
@@ -489,7 +504,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
           if (containsPrivateImport([change])) {
             if (hasBlockedPrivateImports([change], fileName)) {
               info.project.projectService.logger.info(
-                `typescript-plugin-scoped-imports: BLOCKING combined fix change`,
+                "typescript-plugin-scoped-imports: BLOCKING combined fix change",
               );
               return false;
             }
@@ -537,7 +552,7 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
           if (containsPrivateImport([edit])) {
             if (hasBlockedPrivateImports([edit], fileName)) {
               info.project.projectService.logger.info(
-                `typescript-plugin-scoped-imports: BLOCKING refactor edit`,
+                "typescript-plugin-scoped-imports: BLOCKING refactor edit",
               );
               return false;
             }
