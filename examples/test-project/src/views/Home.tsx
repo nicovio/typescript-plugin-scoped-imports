@@ -1,5 +1,4 @@
 import React from "react";
-import Item from "@/components/gallery/__private__/Item";
 
 // PRUEBAS REALIZAR:
 // 1. Escribir: Item (debería dar error "Cannot find name 'Item'")
