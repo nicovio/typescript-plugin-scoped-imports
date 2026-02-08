@@ -1,14 +1,19 @@
 {
-  "name": "typescript-plugin-scoped-imports",
+  "name": "typescript-plugin-scoped-imports-workspace",
   "version": "0.1.0",
-  "description": "TypeScript Language Server plugin para controlar auto-imports basado en scope",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "typescript-plugin-scoped-imports": "workspace:*"
+  },
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "watch": "tsc --watch",
-    "test": "jest",
+    "build": "pnpm --filter typescript-plugin-scoped-imports run build",
+    "typecheck": "pnpm --filter typescript-plugin-scoped-imports run typecheck",
+    "watch": "pnpm --filter typescript-plugin-scoped-imports run watch",
+    "test": "pnpm --filter typescript-plugin-scoped-imports run test",
     "biome:lint": "biome lint .",
     "biome:lint:fix": "biome lint --write .",
     "biome:format": "biome format .",
@@ -16,22 +21,12 @@
     "biome:check": "biome check .",
     "biome:check:fix": "biome check --write ."
   },
-  "keywords": ["typescript", "plugin", "imports", "scoped"],
-  "author": "Nicolas Viotti",
-  "license": "MIT",
-  "packageManager": "pnpm@10.24.0",
-  "engines": {
-    "node": ">=24"
-  },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "jest": "^29.0.0",
+    "@biomejs/biome": "^1.8.3",
     "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
     "ts-jest": "^29.0.0",
-    "@biomejs/biome": "^1.8.3"
-  },
-  "peerDependencies": {
-    "typescript": ">=4.0.0"
+    "typescript": "^5.0.0"
   }
 }

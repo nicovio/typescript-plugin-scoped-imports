@@ -75,8 +75,10 @@ src/
 ### Plugin no se carga
 
 - Verificar que `pnpm run build` completó sin errores en el directorio raíz
-- Verificar que existe `../../dist/index.js`
+- Verificar que existe `../../packages/typescript-plugin-scoped-imports/dist/index.js`
 - Recargar VSCode completamente
+- Seleccionar TypeScript del workspace: `TypeScript: Select TypeScript Version` → `Use Workspace Version`
+- Abrir `TypeScript: Open TS Server log` y buscar `PLUGIN LOADING: typescript-plugin-scoped-imports`
 
 ### No veo logs
 
