@@ -1,9 +1,4 @@
 import React from "react";
-import Item from '../gallery/__private__/Item'
-
-// ESTE ARCHIVO DEBE PODER IMPORTAR DESDE __private__ DESDE UTILS
-// CASO: Archivo en /src/components/utils puede importar desde /src/components/gallery/__private__
-// Al escribir: import Item from '../gallery/' DEBERÍA aparecer __private__ y sus contenidos
 
 export default function UtilsComponent() {
   return (
