@@ -16,7 +16,7 @@ pnpm install
 pnpm run build
 ```
 
-Requiere Node.js 24 LTS.
+Requiere Node.js 20 o superior.
 
 ## Configuracion
 
