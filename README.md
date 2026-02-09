@@ -19,3 +19,6 @@ pnpm run build
 
 La documentacion del plugin esta en:
 `packages/typescript-plugin-scoped-imports/README.md`
+
+Checklist de publicacion:
+`RELEASING.md`
