@@ -1,5 +1,5 @@
-import type * as ts from "typescript/lib/tsserverlibrary";
 import path from "node:path";
+import type * as ts from "typescript/lib/tsserverlibrary";
 
 const PRIVATE_FOLDER = "__private__";
 const PRIVATE_SEGMENT = `/${PRIVATE_FOLDER}/`;
@@ -56,7 +56,10 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
 
       function getProjectBaseDir(compilerOptions: ts.CompilerOptions): string {
         const baseDir = compilerOptions.baseUrl
-          ? path.resolve(info.project.getCurrentDirectory(), compilerOptions.baseUrl)
+          ? path.resolve(
+              info.project.getCurrentDirectory(),
+              compilerOptions.baseUrl,
+            )
           : info.project.getCurrentDirectory();
         return toPosixAbsolute(baseDir);
       }
@@ -114,7 +117,9 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
 
         if (normalizedImportPath.startsWith(".")) {
           const currentDir = path.dirname(normalizedCurrentFile);
-          return toPosixAbsolute(path.resolve(currentDir, normalizedImportPath));
+          return toPosixAbsolute(
+            path.resolve(currentDir, normalizedImportPath),
+          );
         }
 
         if (normalizedImportPath.startsWith("/")) {
@@ -141,24 +146,34 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
           return normalizePath(resolved);
         }
 
-        return tryResolveWithPathsMapping(normalizedImportPath, compilerOptions);
+        return tryResolveWithPathsMapping(
+          normalizedImportPath,
+          compilerOptions,
+        );
       }
 
       function getPrivateParentDirectory(
         importPath: string,
         currentFile: string,
       ): string | null {
-        const resolvedImportPath = resolveImportPathToAbsolute(importPath, currentFile);
+        const resolvedImportPath = resolveImportPathToAbsolute(
+          importPath,
+          currentFile,
+        );
         if (!resolvedImportPath) {
           return null;
         }
 
-        const privateSegmentIndex = resolvedImportPath.indexOf(PRIVATE_SEGMENT_START);
+        const privateSegmentIndex = resolvedImportPath.indexOf(
+          PRIVATE_SEGMENT_START,
+        );
         if (privateSegmentIndex === -1) {
           return null;
         }
 
-        return toDirectoryPath(resolvedImportPath.substring(0, privateSegmentIndex + 1));
+        return toDirectoryPath(
+          resolvedImportPath.substring(0, privateSegmentIndex + 1),
+        );
       }
 
       // Helper: Check if a file can access a __private__ folder
@@ -200,7 +215,9 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
           return false;
         }
 
-        const currentFileDir = toDirectoryPath(path.dirname(normalizedCurrentFile));
+        const currentFileDir = toDirectoryPath(
+          path.dirname(normalizedCurrentFile),
+        );
         if (currentFileDir.startsWith(privateParentDir)) {
           info.project.projectService.logger.info(
             `typescript-plugin-scoped-imports: ALLOWING import (in scope): "${normalizedImportPath}" from "${normalizedCurrentFile}"`,
