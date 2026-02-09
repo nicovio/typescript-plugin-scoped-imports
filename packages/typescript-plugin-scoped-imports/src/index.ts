@@ -1,18 +1,12 @@
 import type * as ts from "typescript/lib/tsserverlibrary";
+import path from "node:path";
 
 const PRIVATE_FOLDER = "__private__";
 const PRIVATE_SEGMENT = `/${PRIVATE_FOLDER}/`;
 const PRIVATE_SEGMENT_START = `/${PRIVATE_FOLDER}`;
-const PRIVATE_PREFIX = `./${PRIVATE_FOLDER}`;
 const PRIVATE_FOLDER_REGEX = PRIVATE_FOLDER.replace(
   /[.*+?^${}()|[\]\\]/g,
   "\\$&",
-);
-const PRIVATE_RELATIVE_PATTERN = new RegExp(
-  `^(\\.\\./)+${PRIVATE_FOLDER_REGEX}(\\/|$)`,
-);
-const PRIVATE_FOLDER_PATTERN = new RegExp(
-  `([^/]+)/${PRIVATE_FOLDER_REGEX}(\\/|$)`,
 );
 const PRIVATE_IMPORT_PATTERN = new RegExp(
   `from\\s+["']([^"']*${PRIVATE_FOLDER_REGEX}[^"']*)["']`,
@@ -38,6 +32,135 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         `typescript-plugin-scoped-imports: Config loaded - ${JSON.stringify(config)}`,
       );
 
+      const tsApi = modules.typescript;
+
+      function normalizePath(value: string): string {
+        return value.replace(/\\/g, "/");
+      }
+
+      function toDirectoryPath(value: string): string {
+        return value.endsWith("/") ? value : `${value}/`;
+      }
+
+      function toPosixAbsolute(value: string): string {
+        return normalizePath(path.resolve(value));
+      }
+
+      function getCompilerOptions(): ts.CompilerOptions {
+        const programOptions = oldLS.getProgram()?.getCompilerOptions();
+        if (programOptions) {
+          return programOptions;
+        }
+        return info.project.getCompilerOptions();
+      }
+
+      function getProjectBaseDir(compilerOptions: ts.CompilerOptions): string {
+        const baseDir = compilerOptions.baseUrl
+          ? path.resolve(info.project.getCurrentDirectory(), compilerOptions.baseUrl)
+          : info.project.getCurrentDirectory();
+        return toPosixAbsolute(baseDir);
+      }
+
+      function buildPathPatternRegex(pattern: string): RegExp {
+        const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+        const wildcardRegex = escaped.replace(/\*/g, "(.*)");
+        return new RegExp(`^${wildcardRegex}$`);
+      }
+
+      function tryResolveWithPathsMapping(
+        modulePath: string,
+        compilerOptions: ts.CompilerOptions,
+      ): string | null {
+        const paths = compilerOptions.paths;
+        if (!paths) {
+          return null;
+        }
+
+        const baseDir = getProjectBaseDir(compilerOptions);
+
+        for (const [pattern, targets] of Object.entries(paths)) {
+          const matcher = buildPathPatternRegex(pattern);
+          const match = modulePath.match(matcher);
+          if (!match) {
+            continue;
+          }
+
+          const captures = match.slice(1);
+
+          for (const target of targets) {
+            let captureIndex = 0;
+            const replaced = target.replace(/\*/g, () => {
+              const value = captures[captureIndex] ?? "";
+              captureIndex += 1;
+              return value;
+            });
+
+            const absolute = path.isAbsolute(replaced)
+              ? toPosixAbsolute(replaced)
+              : toPosixAbsolute(path.join(baseDir, replaced));
+            return absolute;
+          }
+        }
+
+        return null;
+      }
+
+      function resolveImportPathToAbsolute(
+        importPath: string,
+        currentFile: string,
+      ): string | null {
+        const normalizedImportPath = normalizePath(importPath);
+        const normalizedCurrentFile = normalizePath(currentFile);
+
+        if (normalizedImportPath.startsWith(".")) {
+          const currentDir = path.dirname(normalizedCurrentFile);
+          return toPosixAbsolute(path.resolve(currentDir, normalizedImportPath));
+        }
+
+        if (normalizedImportPath.startsWith("/")) {
+          return toPosixAbsolute(normalizedImportPath);
+        }
+
+        const compilerOptions = getCompilerOptions();
+        const host: ts.ModuleResolutionHost = {
+          fileExists: tsApi.sys.fileExists,
+          readFile: tsApi.sys.readFile,
+          directoryExists: tsApi.sys.directoryExists,
+          getDirectories: tsApi.sys.getDirectories,
+          realpath: tsApi.sys.realpath,
+        };
+
+        const resolved = tsApi.resolveModuleName(
+          normalizedImportPath,
+          normalizedCurrentFile,
+          compilerOptions,
+          host,
+        ).resolvedModule?.resolvedFileName;
+
+        if (resolved) {
+          return normalizePath(resolved);
+        }
+
+        return tryResolveWithPathsMapping(normalizedImportPath, compilerOptions);
+      }
+
+      function getPrivateParentDirectory(
+        importPath: string,
+        currentFile: string,
+      ): string | null {
+        const resolvedImportPath = resolveImportPathToAbsolute(importPath, currentFile);
+        if (!resolvedImportPath) {
+          return null;
+        }
+
+        const privateSegmentIndex = resolvedImportPath.indexOf(PRIVATE_SEGMENT_START);
+        if (privateSegmentIndex === -1) {
+          return null;
+        }
+
+        return toDirectoryPath(resolvedImportPath.substring(0, privateSegmentIndex + 1));
+      }
+
       // Helper: Check if a file can access a __private__ folder
       // Rule: A file can access __private__ only if it's in the "scope" of that __private__ folder
       // The scope is: the parent directory of __private__ and all its subdirectories
@@ -45,8 +168,8 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         importPath: string,
         currentFile: string,
       ): boolean {
-        const normalizedImportPath = importPath.replace(/\\/g, "/");
-        const normalizedCurrentFile = currentFile.replace(/\\/g, "/");
+        const normalizedImportPath = normalizePath(importPath);
+        const normalizedCurrentFile = normalizePath(currentFile);
 
         // DEBUG: Log all calls to understand what TypeScript sends
         info.project.projectService.logger.info(
@@ -66,92 +189,27 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
           return true;
         }
 
-        // Case 2: Relative import ./__private__ - sibling access, always allowed
-        if (normalizedImportPath.startsWith(PRIVATE_PREFIX)) {
+        const privateParentDir = getPrivateParentDirectory(
+          normalizedImportPath,
+          normalizedCurrentFile,
+        );
+        if (!privateParentDir) {
           info.project.projectService.logger.info(
-            `typescript-plugin-scoped-imports: ALLOWING ${PRIVATE_PREFIX} import: ${normalizedImportPath}`,
-          );
-          return true;
-        }
-
-        // Case 3: Relative import with only ../ before __private__
-        // Valid: ../__private__, ../../__private__, etc.
-        // Invalid: ../foo/__private__, ../../bar/__private__
-        if (PRIVATE_RELATIVE_PATTERN.test(normalizedImportPath)) {
-          info.project.projectService.logger.info(
-            `typescript-plugin-scoped-imports: ALLOWING relative ../${PRIVATE_FOLDER} import: ${normalizedImportPath}`,
-          );
-          return true;
-        }
-
-        // Case 4: Absolute filesystem path (starts with /)
-        // Check if current file is inside the parent directory of __private__
-        if (normalizedImportPath.startsWith("/")) {
-          const privateIndex = normalizedImportPath.indexOf(
-            PRIVATE_SEGMENT_START,
-          );
-          if (privateIndex !== -1) {
-            // Get the parent directory of __private__ (the scope)
-            const privateParentDir = normalizedImportPath.substring(
-              0,
-              privateIndex + 1,
-            );
-            const currentFileDir = normalizedCurrentFile.substring(
-              0,
-              normalizedCurrentFile.lastIndexOf("/") + 1,
-            );
-
-            if (currentFileDir.startsWith(privateParentDir)) {
-              info.project.projectService.logger.info(
-                `typescript-plugin-scoped-imports: ALLOWING absolute path (in scope): ${normalizedImportPath}`,
-              );
-              return true;
-            }
-          }
-          info.project.projectService.logger.info(
-            `typescript-plugin-scoped-imports: BLOCKING absolute path (out of scope): "${normalizedImportPath}" from "${normalizedCurrentFile}"`,
+            `typescript-plugin-scoped-imports: BLOCKING import (cannot resolve private parent): "${normalizedImportPath}" from "${normalizedCurrentFile}"`,
           );
           return false;
         }
 
-        // Case 5: Alias or module path (doesn't start with . or /)
-        // Use heuristic: find the folder containing __private__ and check if current file is in that folder
-        const privateFolderMatch = normalizedImportPath.match(
-          PRIVATE_FOLDER_PATTERN,
-        );
-        if (privateFolderMatch) {
-          const parentFolderName = privateFolderMatch[1];
-          const currentFileDir = normalizedCurrentFile.substring(
-            0,
-            normalizedCurrentFile.lastIndexOf("/"),
+        const currentFileDir = toDirectoryPath(path.dirname(normalizedCurrentFile));
+        if (currentFileDir.startsWith(privateParentDir)) {
+          info.project.projectService.logger.info(
+            `typescript-plugin-scoped-imports: ALLOWING import (in scope): "${normalizedImportPath}" from "${normalizedCurrentFile}"`,
           );
-
-          // Check if current file is inside a folder with this name
-          // Pattern: the current path should contain /{parentFolderName}/ and the current file should be inside it
-          const folderPattern = `/${parentFolderName}/`;
-          const folderIndex = currentFileDir.indexOf(folderPattern);
-
-          if (folderIndex !== -1) {
-            info.project.projectService.logger.info(
-              `typescript-plugin-scoped-imports: ALLOWING alias path (in scope "${parentFolderName}"): ${normalizedImportPath}`,
-            );
-            return true;
-          }
-
-          // Also check if current file's immediate parent is the scope folder
-          const pathParts = currentFileDir.split("/");
-          const immediateParent = pathParts[pathParts.length - 1];
-          if (immediateParent === parentFolderName) {
-            info.project.projectService.logger.info(
-              `typescript-plugin-scoped-imports: ALLOWING alias path (direct child of "${parentFolderName}"): ${normalizedImportPath}`,
-            );
-            return true;
-          }
+          return true;
         }
 
-        // Block everything else
         info.project.projectService.logger.info(
-          `typescript-plugin-scoped-imports: BLOCKING import: "${normalizedImportPath}" from "${normalizedCurrentFile}"`,
+          `typescript-plugin-scoped-imports: BLOCKING import (out of scope): "${normalizedImportPath}" from "${normalizedCurrentFile}"`,
         );
         return false;
       }
@@ -257,40 +315,30 @@ function init(modules: { typescript: typeof ts }): ts.server.PluginModule {
         }
       }
 
-      // Helper: Check if a relative path prefix allows access to __private__
+      // Helper: Check if a typed path prefix allows access to __private__
       function isPathPrefixValidForPrivate(
         pathPrefix: string,
         currentFile: string,
       ): boolean {
-        // Normalize
         const normalizedPath = pathPrefix.replace(/\\/g, "/");
-        const normalizedFile = currentFile.replace(/\\/g, "/");
-
-        // If path starts with ./ - user is in the parent directory of __private__, valid
-        if (normalizedPath === "." || normalizedPath === "./") {
-          return true;
-        }
-
-        // If path is only ../ segments, user is in a subdirectory, valid
-        // e.g., ../ or ../../ means going up to parent levels
-        if (/^(\.\.\/)+$/.test(normalizedPath) || normalizedPath === "..") {
-          return true;
-        }
-
-        // If path goes outside and then into another directory, it's invalid
-        // e.g., ../other/ or ../../foo/bar/
-        // The pattern: starts with ../ and then has a non-.. directory
-        if (/^(\.\.\/)+[^.]/.test(normalizedPath)) {
-          // Going up and then into a different subtree - not valid for __private__
+        if (!normalizedPath) {
           return false;
         }
 
-        // Absolute paths or aliases - not valid for directory completion
-        if (!normalizedPath.startsWith(".")) {
-          return false;
+        let basePath = normalizedPath;
+        if (basePath === ".") {
+          basePath = "./";
+        } else if (basePath === "..") {
+          basePath = "../";
         }
 
-        return false;
+        if (!basePath.endsWith("/")) {
+          basePath += "/";
+        }
+
+        const candidateImportPath = `${basePath}${PRIVATE_FOLDER}`;
+
+        return isPrivateImportAllowed(candidateImportPath, currentFile);
       }
 
       // Intercept getCompletionsAtPosition

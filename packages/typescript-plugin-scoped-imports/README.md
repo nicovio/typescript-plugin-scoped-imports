@@ -56,7 +56,7 @@ La suite automatizada vive en:
 | Combined fix in-scope (`fixMissingImport`) | Con cambios privados validos | Automatizado |
 | `getCompletionEntryDetails` bloqueado | Respuesta vacia y log de bloqueo | Automatizado |
 | `getEditsForRefactor` smoke | No romper flujo ni introducir `__private__` fuera de scope | Automatizado |
-| Riesgo alias por nombre repetido (`views/gallery/ScopeTrap.tsx`) | No filtrar incorrectamente por coincidencia de nombre | Gap detectado |
+| Riesgo alias por nombre repetido (`views/gallery/ScopeTrap.tsx`) | No filtrar incorrectamente por coincidencia de nombre | Automatizado |
 
 ## Ejecutar validacion automatizada
 
@@ -69,10 +69,7 @@ pnpm run test
 
 ## Gaps detectados (priorizados)
 
-1. `P1` Heuristica de alias por nombre de carpeta puede permitir imports privados fuera de scope cuando se usa `importModuleSpecifierPreference: \"non-relative\"`.
-   - Reproduccion: archivo `src/views/gallery/ScopeTrap.tsx`, quick-fix de `Item` propone `@/components/gallery/__private__/Item`.
-   - Causa probable: la validacion de alias en `isPrivateImportAllowed` usa coincidencia por nombre de carpeta (`/gallery/`) en vez de resolver ruta canonica del modulo.
-   - Mitigacion propuesta: resolver el specifier via TypeScript module resolution y comparar paths absolutos normalizados contra el subtree real del `__private__` objetivo.
+No hay gaps abiertos de severidad alta/media en la matriz actual.
 
 ## Uso en proyecto de prueba
 

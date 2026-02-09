@@ -412,6 +412,15 @@ describe("tsserver integration: scoped private imports", () => {
     expect(containsPrivateCompletion(body)).toBe(false);
   });
 
+  test("path completion allows __private__ from in-scope alias path", async () => {
+    const body = await pathCompletions(
+      fixturePath("src/components/gallery/silbing/nephew/index.tsx"),
+      "@/components/gallery/",
+    );
+
+    expect(containsPrivateCompletion(body)).toBe(true);
+  });
+
   test("path completion allows __private__ from parent scope", async () => {
     const body = await pathCompletions(
       fixturePath("src/components/gallery/ParentComponent.tsx"),
@@ -590,7 +599,7 @@ describe("tsserver integration: scoped private imports", () => {
     expect(hasPrivateImport).toBe(false);
   });
 
-  test.skip("alias heuristic does not leak private imports when folder name repeats", async () => {
+  test("alias heuristic does not leak private imports when folder name repeats", async () => {
     const fixes = await codeFixesForMissingItem(
       fixturePath("src/views/gallery/ScopeTrap.tsx"),
       "non-relative",
