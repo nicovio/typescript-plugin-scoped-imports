@@ -1,9 +1,10 @@
 {
   "name": "typescript-plugin-scoped-imports",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript Language Server plugin para controlar auto-imports basado en scope",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE", "CHANGELOG.md"],
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
