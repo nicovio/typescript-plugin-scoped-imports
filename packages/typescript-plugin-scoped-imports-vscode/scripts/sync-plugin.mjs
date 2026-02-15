@@ -30,16 +30,10 @@ if (existsSync(targetRoot)) {
   rmSync(targetRoot, { recursive: true, force: true });
 }
 
-mkdirSync(path.join(targetRoot, "dist"), { recursive: true });
-
-cpSync(
-  path.join(pluginRoot, "dist", "index.js"),
-  path.join(targetRoot, "dist", "index.js"),
-);
-cpSync(
-  path.join(pluginRoot, "dist", "index.d.ts"),
-  path.join(targetRoot, "dist", "index.d.ts"),
-);
+mkdirSync(targetRoot, { recursive: true });
+cpSync(path.join(pluginRoot, "dist"), path.join(targetRoot, "dist"), {
+  recursive: true,
+});
 cpSync(path.join(pluginRoot, "README.md"), path.join(targetRoot, "README.md"));
 cpSync(path.join(pluginRoot, "LICENSE"), path.join(targetRoot, "LICENSE"));
 

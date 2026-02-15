@@ -2,6 +2,11 @@
 
 All notable changes to this extension are documented in this file.
 
+## 0.1.5
+
+- Fixed plugin sync packaging to include the full core plugin `dist/` output (`constants` and `utils` modules), not only `index.js`.
+- Bundled core plugin updated to `typescript-plugin-scoped-imports@0.1.2`.
+
 ## 0.1.4
 
 - Improved Marketplace README copy (goal, behavior, setup, troubleshooting).
