@@ -19,7 +19,8 @@
   },
   "categories": ["Programming Languages"],
   "keywords": ["typescript", "tsserver", "auto-import", "plugin"],
-  "files": ["README.md", "LICENSE", "plugin/**"],
+  "icon": "assets/icon.png",
+  "files": ["README.md", "LICENSE", "assets/icon.png", "plugin/**"],
   "extensionKind": ["workspace"],
   "contributes": {
     "typescriptServerPlugins": [
