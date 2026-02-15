@@ -1,23 +1,29 @@
 # typescript-plugin-scoped-imports
 
-Monorepo del plugin `typescript-plugin-scoped-imports` y su wrapper para VS Code.
+Monorepo for the `typescript-plugin-scoped-imports` plugin and its VS Code wrapper extension.
 
-## Paquetes
+## Packages
 
-- `packages/typescript-plugin-scoped-imports`: plugin de TypeScript (`tsserver`)
-- `packages/typescript-plugin-scoped-imports-vscode`: extension wrapper para cargar el plugin en VS Code sin depender de "Use Workspace Version"
-- `examples/test-project`: fixture de validacion manual e integracion
+- `packages/typescript-plugin-scoped-imports`: TypeScript (`tsserver`) plugin
+- `packages/typescript-plugin-scoped-imports-vscode`: VS Code wrapper extension (loads the plugin without requiring manual "Use Workspace Version")
+- `examples/test-project`: integration/manual validation fixture
 
-## Que problema resuelve
+## What it solves
 
-Controla sugerencias de auto-import para evitar que archivos fuera de scope importen modulos ubicados en carpetas `__private__`.
+It controls auto-import suggestions so files outside scope cannot import modules inside `__private__` folders.
 
-Regla actual:
+Current scope rule:
 
-- In-scope: carpeta padre de `__private__` y todos sus descendientes.
-- Out-of-scope: cualquier archivo fuera de ese subtree.
+- In scope: parent directory of `__private__` and all descendants
+- Out of scope: any file outside that subtree
 
-## Quick start (desarrollo)
+## Public links
+
+- npm package: https://www.npmjs.com/package/typescript-plugin-scoped-imports
+- VS Code Marketplace: https://marketplace.visualstudio.com/items?itemName=nicovio.typescript-plugin-scoped-imports-vscode
+- Source repository: https://github.com/nicovio/typescript-plugin-scoped-imports
+
+## Quick start (development)
 
 ```bash
 pnpm install
@@ -26,8 +32,8 @@ pnpm run build
 pnpm run test
 ```
 
-## Documentacion
+## Documentation
 
-- Plugin: `packages/typescript-plugin-scoped-imports/README.md`
-- Extension VS Code: `packages/typescript-plugin-scoped-imports-vscode/README.md`
+- Plugin docs: `packages/typescript-plugin-scoped-imports/README.md`
+- VS Code extension docs: `packages/typescript-plugin-scoped-imports-vscode/README.md`
 - Release checklist: `RELEASING.md`

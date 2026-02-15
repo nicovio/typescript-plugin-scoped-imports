@@ -1,15 +1,16 @@
 # TypeScript Plugin Scoped Imports (VS Code)
 
-Extension wrapper para cargar `typescript-plugin-scoped-imports` en VS Code sin depender de seleccionar manualmente "Use Workspace Version".
+Wrapper extension that loads `typescript-plugin-scoped-imports` in VS Code without depending on manually selecting "Use Workspace Version".
 
-## Que hace
+## What it does
 
-Registra el plugin de `tsserver` usando `typescriptServerPlugins`, para que VS Code lo cargue desde la extension.
+Registers the `tsserver` plugin via `typescriptServerPlugins`, so VS Code loads it from the extension.
 
-## Instalacion (usuario)
+## Install (user)
 
-1. Instala la extension desde Marketplace.
-2. Asegurate de tener configurado el plugin en `tsconfig.json` del proyecto:
+1. Install the extension from VS Code Marketplace:
+   - https://marketplace.visualstudio.com/items?itemName=nicovio.typescript-plugin-scoped-imports-vscode
+2. Make sure your project has the plugin in `tsconfig.json`:
 
 ```json
 {
@@ -23,31 +24,31 @@ Registra el plugin de `tsserver` usando `typescriptServerPlugins`, para que VS C
 }
 ```
 
-## Verificacion
+## Verification
 
-1. Ejecuta `TypeScript: Open TS Server log`.
-2. Busca: `PLUGIN LOADING: typescript-plugin-scoped-imports`.
+1. Run `TypeScript: Open TS Server log`.
+2. Look for `PLUGIN LOADING: typescript-plugin-scoped-imports`.
 
 ## Troubleshooting
 
-Si no carga:
+If it does not load:
 
-- recarga VS Code (`Developer: Reload Window`)
-- confirma que el proyecto tenga `tsconfig.json` valido
-- revisa que el log no muestre errores de carga del plugin
+- reload VS Code (`Developer: Reload Window`)
+- confirm the project has a valid `tsconfig.json`
+- check the log for plugin loading errors
 
-## Para mantenedores (publicacion)
+## For maintainers (publishing)
 
-Desde esta carpeta:
+From this directory:
 
 ```bash
 npm install
 npm run package
 ```
 
-Esto genera un `.vsix` autocontenido (incluye el plugin sincronizado en `plugin/`).
+This generates a self-contained `.vsix` (includes synced plugin files under `plugin/`).
 
-Publicar en Marketplace:
+Publish to Marketplace:
 
 ```bash
 npx vsce login nicovio

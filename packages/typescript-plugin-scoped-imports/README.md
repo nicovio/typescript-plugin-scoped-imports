@@ -1,26 +1,26 @@
 # typescript-plugin-scoped-imports
 
-TypeScript Language Service plugin para filtrar auto-imports de carpetas privadas (`__private__`) segun el scope del archivo.
+TypeScript Language Service plugin that filters auto-imports from private folders (`__private__`) based on file scope.
 
-## Que hace
+## What it does
 
-Cuando TypeScript propone imports (completions, quick fixes o refactors), este plugin bloquea imports desde `__private__` si el archivo actual esta fuera de scope.
+When TypeScript proposes imports (completions, quick fixes, refactors), this plugin blocks imports from `__private__` when the current file is out of scope.
 
-Regla de scope actual:
+Current scope rule:
 
-- Permitido: carpeta padre de `__private__` y subdirectorios.
-- Bloqueado: cualquier archivo fuera de ese subtree.
+- Allowed: parent directory of `__private__` and descendants
+- Blocked: any file outside that subtree
 
-## Instalacion
+## Installation
 
 ```bash
 npm i -D typescript
 npm i typescript-plugin-scoped-imports
 ```
 
-## Configuracion
+## Configuration
 
-En `tsconfig.json`:
+In `tsconfig.json`:
 
 ```json
 {
@@ -34,9 +34,9 @@ En `tsconfig.json`:
 }
 ```
 
-## Ejemplo rapido
+## Quick example
 
-Estructura:
+Structure:
 
 ```text
 src/components/gallery/__private__/Item.ts
@@ -44,44 +44,45 @@ src/components/gallery/silbing/nephew/InScope.ts
 src/views/Home.ts
 ```
 
-- En `InScope.ts`: se permite importar `Item` desde `__private__`.
-- En `Home.ts`: se bloquea importar `Item` desde `__private__`.
+- In `InScope.ts`: importing `Item` from `__private__` is allowed
+- In `Home.ts`: importing `Item` from `__private__` is blocked
 
 ## VS Code
 
-Si usas solo el plugin npm, VS Code puede requerir usar TypeScript del workspace para cargarlo.
+If you use only the npm plugin, VS Code may require using the workspace TypeScript version to load it.
 
-Si quieres evitar eso, usa la extension wrapper:
+To avoid that, use the wrapper extension:
 
 - `packages/typescript-plugin-scoped-imports-vscode`
+- Marketplace: https://marketplace.visualstudio.com/items?itemName=nicovio.typescript-plugin-scoped-imports-vscode
 
-## Compatibilidad
+## Compatibility
 
 - Node.js: `>=20`
 - TypeScript: `>=4.0.0`
 
 ## Troubleshooting
 
-Si no parece cargar:
+If it does not load:
 
-1. Abre `TypeScript: Open TS Server log`.
-2. Busca `PLUGIN LOADING: typescript-plugin-scoped-imports`.
-3. Si no aparece, revisa:
-   - que el plugin este instalado en el proyecto
-   - que `tsconfig.json` tenga la entrada en `compilerOptions.plugins`
+1. Open `TypeScript: Open TS Server log`.
+2. Look for `PLUGIN LOADING: typescript-plugin-scoped-imports`.
+3. If missing, check:
+   - plugin is installed in the project
+   - `tsconfig.json` includes it under `compilerOptions.plugins`
 
-## Limitaciones conocidas
+## Known limitations
 
-- La convencion de privacidad es por nombre de carpeta `__private__`.
-- No hay configuracion custom de patrones en esta version.
+- Privacy convention is based on folder name `__private__`
+- No custom private-pattern configuration yet
 
-## Validacion automatizada
+## Automated validation
 
-La cobertura principal vive en:
+Main integration coverage lives in:
 
 - `packages/typescript-plugin-scoped-imports/__tests__/integration/tsserver.scoped-imports.spec.ts`
 
-Ejecutar:
+Run:
 
 ```bash
 pnpm run build
@@ -90,4 +91,4 @@ pnpm run test
 
 ## Changelog
 
-Ver `CHANGELOG.md`.
+See `CHANGELOG.md`.
