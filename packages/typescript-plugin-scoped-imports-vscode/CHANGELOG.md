@@ -2,6 +2,11 @@
 
 All notable changes to this extension are documented in this file.
 
+## 0.1.6
+
+- Bundled core plugin updated to `typescript-plugin-scoped-imports@0.1.3`.
+- Includes completion hardening for exact `__private__` directory matching and improved ambiguity handling for similarly named directories.
+
 ## 0.1.5
 
 - Fixed plugin sync packaging to include the full core plugin `dist/` output (`constants` and `utils` modules), not only `index.js`.
