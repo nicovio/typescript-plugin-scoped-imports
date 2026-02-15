@@ -17,23 +17,10 @@
   "engines": {
     "vscode": "^1.88.0"
   },
-  "categories": [
-    "Programming Languages"
-  ],
-  "keywords": [
-    "typescript",
-    "tsserver",
-    "auto-import",
-    "plugin"
-  ],
-  "files": [
-    "README.md",
-    "LICENSE",
-    "plugin/**"
-  ],
-  "extensionKind": [
-    "workspace"
-  ],
+  "categories": ["Programming Languages"],
+  "keywords": ["typescript", "tsserver", "auto-import", "plugin"],
+  "files": ["README.md", "LICENSE", "plugin/**"],
+  "extensionKind": ["workspace"],
   "contributes": {
     "typescriptServerPlugins": [
       {

@@ -1,18 +1,26 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const extensionRoot = path.resolve(__dirname, "..");
-const pluginRoot = path.resolve(extensionRoot, "..", "typescript-plugin-scoped-imports");
+const pluginRoot = path.resolve(
+  extensionRoot,
+  "..",
+  "typescript-plugin-scoped-imports",
+);
 const pluginPackagePath = path.join(pluginRoot, "package.json");
 const pluginPackage = JSON.parse(readFileSync(pluginPackagePath, "utf8"));
 
-const targetRoot = path.join(
-  extensionRoot,
-  "plugin",
-);
+const targetRoot = path.join(extensionRoot, "plugin");
 
 if (existsSync(targetRoot)) {
   rmSync(targetRoot, { recursive: true, force: true });
@@ -20,8 +28,14 @@ if (existsSync(targetRoot)) {
 
 mkdirSync(path.join(targetRoot, "dist"), { recursive: true });
 
-cpSync(path.join(pluginRoot, "dist", "index.js"), path.join(targetRoot, "dist", "index.js"));
-cpSync(path.join(pluginRoot, "dist", "index.d.ts"), path.join(targetRoot, "dist", "index.d.ts"));
+cpSync(
+  path.join(pluginRoot, "dist", "index.js"),
+  path.join(targetRoot, "dist", "index.js"),
+);
+cpSync(
+  path.join(pluginRoot, "dist", "index.d.ts"),
+  path.join(targetRoot, "dist", "index.d.ts"),
+);
 cpSync(path.join(pluginRoot, "README.md"), path.join(targetRoot, "README.md"));
 cpSync(path.join(pluginRoot, "LICENSE"), path.join(targetRoot, "LICENSE"));
 
