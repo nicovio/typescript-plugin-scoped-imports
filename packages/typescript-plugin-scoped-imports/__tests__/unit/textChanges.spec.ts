@@ -31,6 +31,22 @@ describe("textChanges utils", () => {
     ]);
   });
 
+  test("extractPrivateImportPaths collects multiple private imports in one edit", () => {
+    const changes = [
+      fileChange(
+        [
+          'import Item from "@/components/gallery/__private__/Item";',
+          'import Local from "@/components/gallery/__private__/Local";',
+        ].join("\n"),
+      ),
+    ];
+
+    expect(extractPrivateImportPaths(changes)).toEqual([
+      "@/components/gallery/__private__/Item",
+      "@/components/gallery/__private__/Local",
+    ]);
+  });
+
   test("containsPrivateImport detects private marker in new text", () => {
     expect(
       containsPrivateImport([

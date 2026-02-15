@@ -85,4 +85,24 @@ describe("privateScope utils", () => {
 
     expect(result).toBe(true);
   });
+
+  test("handles windows-style separators consistently", () => {
+    const windowsResolveImportPath = (importPath: string): string | null => {
+      if (importPath.includes("@/components/gallery/__private__/Item")) {
+        return "C:/repo/src/components/gallery/__private__/Item.tsx";
+      }
+
+      return null;
+    };
+
+    const result = isPrivateImportAllowed({
+      importPath: "@/components/gallery/__private__/Item",
+      currentFile:
+        "C:\\repo\\src\\components\\gallery\\sibling\\nephew\\index.tsx",
+      resolveImportPathToAbsolute: windowsResolveImportPath,
+      logging: NOOP_LOGGER,
+    });
+
+    expect(result).toBe(true);
+  });
 });
