@@ -1,26 +1,26 @@
-# TypeScript Plugin: Scoped Imports
+# typescript-plugin-scoped-imports
 
-TypeScript Language Server plugin para controlar auto-imports basado en el scope del archivo.
+TypeScript Language Service plugin para filtrar auto-imports de carpetas privadas (`__private__`) segun el scope del archivo.
 
-## Estado actual
+## Que hace
 
-Regla validada en esta fase:
+Cuando TypeScript propone imports (completions, quick fixes o refactors), este plugin bloquea imports desde `__private__` si el archivo actual esta fuera de scope.
 
-- `__private__` es accesible desde su carpeta padre y subdirectorios.
-- Fuera de ese subtree, el plugin bloquea sugerencias y fixes que introduzcan imports privados.
+Regla de scope actual:
 
-## Instalacion (workspace)
+- Permitido: carpeta padre de `__private__` y subdirectorios.
+- Bloqueado: cualquier archivo fuera de ese subtree.
+
+## Instalacion
 
 ```bash
-pnpm install
-pnpm run build
+npm i -D typescript
+npm i typescript-plugin-scoped-imports
 ```
-
-Requiere Node.js 20 o superior.
 
 ## Configuracion
 
-En tu `tsconfig.json`:
+En `tsconfig.json`:
 
 ```json
 {
@@ -34,51 +34,60 @@ En tu `tsconfig.json`:
 }
 ```
 
-Convencion: el plugin considera privados los paths que contengan la carpeta `__private__`.
+## Ejemplo rapido
 
-## Matriz de validacion
+Estructura:
 
-La suite automatizada vive en:
+```text
+src/components/gallery/__private__/Item.ts
+src/components/gallery/silbing/nephew/InScope.ts
+src/views/Home.ts
+```
+
+- En `InScope.ts`: se permite importar `Item` desde `__private__`.
+- En `Home.ts`: se bloquea importar `Item` desde `__private__`.
+
+## VS Code
+
+Si usas solo el plugin npm, VS Code puede requerir usar TypeScript del workspace para cargarlo.
+
+Si quieres evitar eso, usa la extension wrapper:
+
+- `packages/typescript-plugin-scoped-imports-vscode`
+
+## Compatibilidad
+
+- Node.js: `>=20`
+- TypeScript: `>=4.0.0`
+
+## Troubleshooting
+
+Si no parece cargar:
+
+1. Abre `TypeScript: Open TS Server log`.
+2. Busca `PLUGIN LOADING: typescript-plugin-scoped-imports`.
+3. Si no aparece, revisa:
+   - que el plugin este instalado en el proyecto
+   - que `tsconfig.json` tenga la entrada en `compilerOptions.plugins`
+
+## Limitaciones conocidas
+
+- La convencion de privacidad es por nombre de carpeta `__private__`.
+- No hay configuracion custom de patrones en esta version.
+
+## Validacion automatizada
+
+La cobertura principal vive en:
 
 - `packages/typescript-plugin-scoped-imports/__tests__/integration/tsserver.scoped-imports.spec.ts`
 
-| Caso | Esperado | Resultado |
-| --- | --- | --- |
-| Carga del plugin en tsserver | Debe loguear `PLUGIN LOADING` | Automatizado |
-| Path completion out-of-scope (`Home.tsx` + `@/components/gallery/`) | No sugerir `__private__` | Automatizado |
-| Path completion in-scope padre (`ParentComponent.tsx` + `./`) | Sugerir `__private__` | Automatizado |
-| Path completion in-scope descendiente (`silbing/index.tsx` + `../`) | Sugerir `__private__` | Automatizado |
-| Path completion out-of-scope lateral (`UtilsComponent.tsx` + `../gallery/`) | No sugerir `__private__` | Automatizado |
-| CodeFix missing import out-of-scope (`Home.tsx`) | No proponer imports privados | Automatizado |
-| CodeFix missing import in-scope padre (`ParentComponent.tsx`) | Proponer import privado valido | Automatizado |
-| CodeFix missing import in-scope descendiente (`silbing/nephew/index.tsx`) | Proponer import privado valido | Automatizado |
-| Combined fix out-of-scope (`fixMissingImport`) | Sin cambios con `__private__` | Automatizado |
-| Combined fix in-scope (`fixMissingImport`) | Con cambios privados validos | Automatizado |
-| `getCompletionEntryDetails` bloqueado | Respuesta vacia y log de bloqueo | Automatizado |
-| `getEditsForRefactor` smoke | No romper flujo ni introducir `__private__` fuera de scope | Automatizado |
-| Riesgo alias por nombre repetido (`views/gallery/ScopeTrap.tsx`) | No filtrar incorrectamente por coincidencia de nombre | Automatizado |
-
-## Ejecutar validacion automatizada
-
-Desde la raiz del workspace:
+Ejecutar:
 
 ```bash
 pnpm run build
 pnpm run test
 ```
 
-## Gaps detectados (priorizados)
+## Changelog
 
-No hay gaps abiertos de severidad alta/media en la matriz actual.
-
-## Uso en proyecto de prueba
-
-Ver `examples/test-project/` en la raiz del workspace para un ejemplo de consumo real.
-
-## Roadmap
-
-- [x] Fase 1: POC y validacion de carga
-- [x] Validacion integral de casos de completions y codefixes
-- [ ] Fase 2: Reglas contextuales adicionales
-- [ ] Fase 3: Configuracion flexible
-- [ ] Fase 4: Distribucion y documentacion completa
+Ver `CHANGELOG.md`.
