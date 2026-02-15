@@ -1,8 +1,6 @@
 # TypeScript Plugin Scoped Imports (VS Code)
 
-Enforce scoped imports in TypeScript projects.
-
-It blocks out-of-scope imports from `__private__` folders in editor suggestions and fixes.
+This extension prevents accidental auto-imports from `__private__` folders when you are outside the allowed scope, while keeping valid suggestions for files in the parent directory and its descendants.
 
 ## What you get
 

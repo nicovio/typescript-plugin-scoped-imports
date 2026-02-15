@@ -2,6 +2,11 @@
 
 All notable changes to this extension are documented in this file.
 
+## 0.1.7
+
+- Updated Marketplace description to focus on the user-facing problem solved.
+- Updated README opening copy to explain the extension value before implementation details.
+
 ## 0.1.6
 
 - Bundled core plugin updated to `typescript-plugin-scoped-imports@0.1.3`.
