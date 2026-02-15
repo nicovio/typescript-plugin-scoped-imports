@@ -20,7 +20,11 @@ const pluginRoot = path.resolve(
 const pluginPackagePath = path.join(pluginRoot, "package.json");
 const pluginPackage = JSON.parse(readFileSync(pluginPackagePath, "utf8"));
 
-const targetRoot = path.join(extensionRoot, "plugin");
+const targetRoot = path.join(
+  extensionRoot,
+  "node_modules",
+  "typescript-plugin-scoped-imports",
+);
 
 if (existsSync(targetRoot)) {
   rmSync(targetRoot, { recursive: true, force: true });

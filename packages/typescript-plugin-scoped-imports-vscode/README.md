@@ -46,7 +46,7 @@ npm install
 npm run package
 ```
 
-This generates a self-contained `.vsix` (includes synced plugin files under `plugin/`).
+This generates a self-contained `.vsix` (includes synced plugin files under `node_modules/typescript-plugin-scoped-imports/`).
 
 Publish to Marketplace:
 

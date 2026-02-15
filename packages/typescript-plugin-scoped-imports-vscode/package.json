@@ -2,7 +2,7 @@
   "name": "typescript-plugin-scoped-imports-vscode",
   "displayName": "TypeScript Plugin Scoped Imports",
   "description": "VS Code extension wrapper that loads typescript-plugin-scoped-imports in tsserver.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "nicovio",
   "license": "MIT",
   "repository": {
@@ -20,20 +20,25 @@
   "categories": ["Programming Languages"],
   "keywords": ["typescript", "tsserver", "auto-import", "plugin"],
   "icon": "assets/icon.png",
-  "files": ["README.md", "LICENSE", "assets/icon.png", "plugin/**"],
+  "files": [
+    "README.md",
+    "LICENSE",
+    "assets/icon.png",
+    "node_modules/typescript-plugin-scoped-imports/**"
+  ],
   "extensionKind": ["workspace"],
   "contributes": {
     "typescriptServerPlugins": [
       {
-        "name": "./plugin",
+        "name": "typescript-plugin-scoped-imports",
         "enableForWorkspaceTypeScriptVersions": true
       }
     ]
   },
   "scripts": {
     "sync:plugin": "node ./scripts/sync-plugin.mjs",
-    "package": "npm run sync:plugin && vsce package --no-dependencies",
-    "publish:vsce": "npm run sync:plugin && vsce publish --no-dependencies"
+    "package": "npm run sync:plugin && vsce package",
+    "publish:vsce": "npm run sync:plugin && vsce publish"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.6.1"
