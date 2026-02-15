@@ -5,7 +5,7 @@ import {
   getImportPathAtPosition,
   shouldAllowCompletionEntry,
 } from "./utils/completion";
-import { createPluginLogger, type PluginConfig } from "./utils/logging";
+import { type PluginConfig, createPluginLogger } from "./utils/logging";
 import { resolveImportPathToAbsolute } from "./utils/moduleResolution";
 import { isPrivateImportAllowed } from "./utils/privateScope";
 import {
