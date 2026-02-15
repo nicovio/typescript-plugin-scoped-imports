@@ -27,12 +27,15 @@ In `tsconfig.json`:
   "compilerOptions": {
     "plugins": [
       {
-        "name": "typescript-plugin-scoped-imports"
+        "name": "typescript-plugin-scoped-imports",
+        "debug": false
       }
     ]
   }
 }
 ```
+
+`debug` is optional. Set it to `true` to enable verbose plugin debug logs.
 
 ## Quick example
 
