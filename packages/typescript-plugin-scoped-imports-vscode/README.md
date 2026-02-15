@@ -1,56 +1,60 @@
 # TypeScript Plugin Scoped Imports (VS Code)
 
-Wrapper extension that loads `typescript-plugin-scoped-imports` in VS Code without depending on manually selecting "Use Workspace Version".
+Enforce scoped imports in TypeScript projects.
 
-## What it does
+It blocks out-of-scope imports from `__private__` folders in editor suggestions and fixes.
 
-Registers the `tsserver` plugin via `typescriptServerPlugins`, so VS Code loads it from the extension.
+## What you get
 
-## Install (user)
+- Out-of-scope files do not get auto-imports from `__private__`
+- In-scope files still get normal suggestions and quick fixes
+- Works with path completions and import-related code actions
 
-1. Install the extension from VS Code Marketplace:
-   - https://marketplace.visualstudio.com/items?itemName=nicovio.typescript-plugin-scoped-imports-vscode
-2. Make sure your project has the plugin in `tsconfig.json`:
+## Scope rule
+
+- Allowed: parent directory of `__private__` and all descendants
+- Blocked: any file outside that subtree
+
+Example:
+
+- `src/components/gallery/__private__/Item.ts` (private module)
+- `src/components/gallery/Parent.tsx` -> allowed
+- `src/components/gallery/sibling/Nephew.tsx` -> allowed
+- `src/views/Home.tsx` -> blocked
+
+## Setup
+
+1. Install this extension from Marketplace.
+2. In most cases it starts working immediately.
+3. If changes are not applied yet after install/update, run `TypeScript: Restart TS Server` or `Developer: Reload Window`.
+
+## Optional: explicit project config
+
+The extension works without this, but you can still add plugin config in `tsconfig.json`:
 
 ```json
 {
   "compilerOptions": {
-    "plugins": [
-      {
-        "name": "typescript-plugin-scoped-imports"
-      }
-    ]
+    "plugins": [{ "name": "typescript-plugin-scoped-imports" }]
   }
 }
 ```
 
-## Verification
+## Verify
 
 1. Run `TypeScript: Open TS Server log`.
-2. Look for `PLUGIN LOADING: typescript-plugin-scoped-imports`.
+2. Confirm this log line exists:
+
+```text
+PLUGIN LOADING: typescript-plugin-scoped-imports
+```
 
 ## Troubleshooting
 
-If it does not load:
+- Ensure the file is inside a TypeScript project (`tsconfig.json`).
+- Restart TS Server or reload window if behavior is stale after install/update.
 
-- reload VS Code (`Developer: Reload Window`)
-- confirm the project has a valid `tsconfig.json`
-- check the log for plugin loading errors
+## Source code
 
-## For maintainers (publishing)
-
-From this directory:
-
-```bash
-npm install
-npm run package
-```
-
-This generates a self-contained `.vsix` (includes synced plugin files under `node_modules/typescript-plugin-scoped-imports/`).
-
-Publish to Marketplace:
-
-```bash
-npx vsce login nicovio
-npm run publish:vsce
-```
+- Repo: https://github.com/nicovio/typescript-plugin-scoped-imports
+- Core plugin docs: https://github.com/nicovio/typescript-plugin-scoped-imports/tree/main/packages/typescript-plugin-scoped-imports

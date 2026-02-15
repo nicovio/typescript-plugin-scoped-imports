@@ -1,7 +1,7 @@
 {
   "name": "typescript-plugin-scoped-imports-vscode",
   "displayName": "TypeScript Plugin Scoped Imports",
-  "description": "VS Code extension wrapper that loads typescript-plugin-scoped-imports in tsserver.",
+  "description": "Enforces scoped TypeScript imports and blocks out-of-scope __private__ auto-imports.",
   "version": "0.1.3",
   "publisher": "nicovio",
   "license": "MIT",
@@ -22,6 +22,7 @@
   "icon": "assets/icon.png",
   "files": [
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "assets/icon.png",
     "node_modules/typescript-plugin-scoped-imports/**"
