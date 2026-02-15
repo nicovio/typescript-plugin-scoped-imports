@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 - 2026-02-15
+
+- Refactor: split plugin internals into `utils/` modules and keep `src/index.ts` focused on tsserver interceptor orchestration.
+- Internal API: adopted parameter-signature convention (`3+` args use typed object params, `1-2` args stay positional) across touched utilities and wiring.
+- Tests: added and expanded unit coverage for module resolution, text change parsing edge cases, and path/scope normalization behavior.
+- Behavior: no public API changes and no scope-rule changes (`parent + descendientes` remains intact).
+
 ## 0.1.1 - 2026-02-13
 
 - Fix: alias/private scope validation now resolves canonical module paths, preventing false positives with repeated folder names (e.g. `ScopeTrap`).
