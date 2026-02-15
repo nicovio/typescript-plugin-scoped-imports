@@ -2,6 +2,7 @@ import type * as ts from "typescript/lib/tsserverlibrary";
 
 import {
   getImportPathAtPosition,
+  isPathPrefixValidForPrivate,
   shouldAllowCompletionEntry,
 } from "../../src/utils/completion";
 
@@ -64,6 +65,39 @@ describe("completion utils", () => {
         message.includes("BLOCKING __private__ directory (invalid path"),
       ),
     ).toBe(true);
+  });
+
+  test("builds candidate path using directory entry name", () => {
+    const calls: string[] = [];
+
+    const result = isPathPrefixValidForPrivate({
+      pathPrefix: "@/components/gallery",
+      directoryName: "__private__custom",
+      currentFile: "/repo/src/views/Home.tsx",
+      isPrivateImportAllowed: (importPath) => {
+        calls.push(importPath);
+        return true;
+      },
+    });
+
+    expect(result).toBe(true);
+    expect(calls).toEqual(["@/components/gallery/__private__custom"]);
+  });
+
+  test("does not treat similarly named directories as canonical __private__", () => {
+    const isPrivateImportAllowed = jest.fn(() => true);
+
+    const allowed = shouldAllowCompletionEntry({
+      entry: completionEntry({ name: "__private__backup", kind: "directory" }),
+      typedPath: "@/components/gallery/",
+      fileName: "/repo/src/components/gallery/Parent.tsx",
+      blockedNames: new Set<string>(),
+      isPrivateImportAllowed,
+      logInfo: () => {},
+    });
+
+    expect(allowed).toBe(false);
+    expect(isPrivateImportAllowed).not.toHaveBeenCalled();
   });
 
   test("allows __private__ directory completion when typed path is in scope", () => {

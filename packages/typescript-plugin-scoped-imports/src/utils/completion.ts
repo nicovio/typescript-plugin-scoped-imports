@@ -9,6 +9,7 @@ export type GetImportPathAtPositionParams = {
 };
 export type IsPathPrefixValidForPrivateParams = {
   pathPrefix: string;
+  directoryName: string;
   currentFile: string;
   isPrivateImportAllowed: (importPath: string, currentFile: string) => boolean;
 };
@@ -48,9 +49,10 @@ export function getImportPathAtPosition(
 export function isPathPrefixValidForPrivate(
   params: IsPathPrefixValidForPrivateParams,
 ): boolean {
-  const { pathPrefix, currentFile, isPrivateImportAllowed } = params;
+  const { pathPrefix, directoryName, currentFile, isPrivateImportAllowed } =
+    params;
   const normalizedPath = normalizePath(pathPrefix);
-  if (!normalizedPath) {
+  if (!normalizedPath || !directoryName) {
     return false;
   }
 
@@ -65,7 +67,7 @@ export function isPathPrefixValidForPrivate(
     basePath += "/";
   }
 
-  const candidateImportPath = `${basePath}${PRIVATE_FOLDER}`;
+  const candidateImportPath = `${basePath}${directoryName}`;
   return isPrivateImportAllowed(candidateImportPath, currentFile);
 }
 
@@ -86,32 +88,36 @@ export function shouldAllowCompletionEntry({
   isPrivateImportAllowed,
   logInfo,
 }: CompletionDecisionOptions): boolean {
-  if (entry.name?.toLowerCase().includes(PRIVATE_FOLDER)) {
-    if (entry.source) {
-      return isPrivateImportAllowed(entry.source, fileName);
-    }
+  const isPrivateDirectoryEntry =
+    entry.kind === "directory" && entry.name === PRIVATE_FOLDER;
 
-    if (entry.kind === "directory") {
-      if (
-        typedPath !== null &&
-        isPathPrefixValidForPrivate({
-          pathPrefix: typedPath,
-          currentFile: fileName,
-          isPrivateImportAllowed,
-        })
-      ) {
-        logInfo(
-          `typescript-plugin-scoped-imports: ALLOWING ${PRIVATE_FOLDER} directory (valid path: "${typedPath}")`,
-        );
-        return true;
-      }
-
+  if (isPrivateDirectoryEntry) {
+    if (
+      typedPath !== null &&
+      isPathPrefixValidForPrivate({
+        pathPrefix: typedPath,
+        directoryName: entry.name,
+        currentFile: fileName,
+        isPrivateImportAllowed,
+      })
+    ) {
       logInfo(
-        `typescript-plugin-scoped-imports: BLOCKING ${PRIVATE_FOLDER} directory (invalid path: "${typedPath}")`,
+        `typescript-plugin-scoped-imports: ALLOWING ${PRIVATE_FOLDER} directory (valid path: "${typedPath}")`,
       );
-      return false;
+      return true;
     }
 
+    logInfo(
+      `typescript-plugin-scoped-imports: BLOCKING ${PRIVATE_FOLDER} directory (invalid path: "${typedPath}")`,
+    );
+    return false;
+  }
+
+  if (entry.source?.includes(PRIVATE_FOLDER)) {
+    return isPrivateImportAllowed(entry.source, fileName);
+  }
+
+  if (entry.name?.toLowerCase().includes(PRIVATE_FOLDER)) {
     logInfo(
       `typescript-plugin-scoped-imports: BLOCKING entry by name (no source): ${entry.name}`,
     );
@@ -147,10 +153,6 @@ export function shouldAllowCompletionEntry({
     }
 
     return true;
-  }
-
-  if (entry.source.includes(PRIVATE_FOLDER)) {
-    return isPrivateImportAllowed(entry.source, fileName);
   }
 
   return true;
