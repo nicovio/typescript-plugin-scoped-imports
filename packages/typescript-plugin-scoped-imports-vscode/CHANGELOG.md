@@ -2,7 +2,7 @@
 
 All notable changes to this extension are documented in this file.
 
-## Unreleased
+## 0.1.4
 
 - Improved Marketplace README copy (goal, behavior, setup, troubleshooting).
 - Added changelog file for Marketplace release notes tab.
