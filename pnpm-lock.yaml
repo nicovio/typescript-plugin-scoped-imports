@@ -68,10 +68,6 @@ importers:
         version: 5.9.3
 
   packages/typescript-plugin-scoped-imports-vscode:
-    dependencies:
-      typescript-plugin-scoped-imports:
-        specifier: ^0.1.1
-        version: 0.1.1(typescript@5.9.3)
     devDependencies:
       '@vscode/vsce':
         specifier: ^3.6.1
@@ -2117,12 +2113,6 @@ packages:
 
   typed-rest-client@1.8.11:
     resolution: {integrity: sha512-5UvfMpd1oelmUPRbbaVnq+rHP7ng2cE4qoQkQeAqxRL6PklkxsM0g32/HL0yfvruK6ojQ5x8EE+HF4YV6DtuCA==}
-
-  typescript-plugin-scoped-imports@0.1.1:
-    resolution: {integrity: sha512-mBfqWSVxlkNQg6siuHO49OiEjkMi74hvIzjNubNg5wVH8qy1a/A75b7ihtlcw42hTmELZKLc1ECZFuWk1fiPvw==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      typescript: '>=4.0.0'
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -4741,10 +4731,6 @@ snapshots:
       qs: 6.14.2
       tunnel: 0.0.6
       underscore: 1.13.7
-
-  typescript-plugin-scoped-imports@0.1.1(typescript@5.9.3):
-    dependencies:
-      typescript: 5.9.3
 
   typescript@5.9.3: {}
 
