@@ -2,6 +2,10 @@
 
 All notable changes to this extension are documented in this file.
 
+## 0.1.9
+
+- Updated Marketplace README demo GIF reference to an absolute GitHub raw URL to avoid relative-path rendering issues.
+
 ## 0.1.8
 
 - Added a short before/after demo GIF to the Marketplace README.

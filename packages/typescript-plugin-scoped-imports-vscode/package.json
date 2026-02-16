@@ -2,7 +2,7 @@
   "name": "typescript-plugin-scoped-imports-vscode",
   "displayName": "TypeScript Plugin Scoped Imports",
   "description": "Prevent out-of-scope auto-imports from __private__ folders in TypeScript projects.",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "publisher": "nicovio",
   "license": "MIT",
   "repository": {

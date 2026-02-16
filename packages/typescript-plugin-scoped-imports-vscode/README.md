@@ -4,7 +4,7 @@ This extension prevents accidental auto-imports from `__private__` folders when 
 
 ## Quick demo
 
-![Scoped imports demo](assets/demo.gif)
+![Scoped imports demo](https://raw.githubusercontent.com/nicovio/typescript-plugin-scoped-imports/main/packages/typescript-plugin-scoped-imports-vscode/assets/demo.gif)
 
 ## What you get
 
