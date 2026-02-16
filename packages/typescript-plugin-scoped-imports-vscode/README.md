@@ -2,6 +2,10 @@
 
 This extension prevents accidental auto-imports from `__private__` folders when you are outside the allowed scope, while keeping valid suggestions for files in the parent directory and its descendants.
 
+## Quick demo
+
+![Scoped imports demo](assets/demo.gif)
+
 ## What you get
 
 - Out-of-scope files do not get auto-imports from `__private__`

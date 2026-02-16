@@ -2,6 +2,11 @@
 
 All notable changes to this extension are documented in this file.
 
+## 0.1.8
+
+- Added a short before/after demo GIF to the Marketplace README.
+- Packaged the demo asset in the VSIX so documentation renders consistently.
+
 ## 0.1.7
 
 - Updated Marketplace description to focus on the user-facing problem solved.
