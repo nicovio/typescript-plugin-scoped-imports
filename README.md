@@ -17,6 +17,12 @@ Current scope rule:
 - In scope: parent directory of `__private__` and all descendants
 - Out of scope: any file outside that subtree
 
+## Demo
+
+Out-of-scope files do not get `__private__` suggestions, while in-scope files still do.
+
+![Scoped imports demo](packages/typescript-plugin-scoped-imports-vscode/assets/demo.gif)
+
 ## Public links
 
 - npm package: https://www.npmjs.com/package/typescript-plugin-scoped-imports
